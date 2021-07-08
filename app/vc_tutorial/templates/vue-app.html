@@ -1,0 +1,14 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+    <head>
+    </head>
+    <body>
+        Route name: {{ route }}
+        <div id="app"></div>
+
+        <script type="text/javascript" src="{% static 'ui/js/chunk-vendors.js' %}"></script>
+        <script type="text/javascript" src="{% static 'ui/js/app.js' %}"></script>
+    </body>
+</html>
