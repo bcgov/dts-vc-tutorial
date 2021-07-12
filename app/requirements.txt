@@ -1,4 +1,5 @@
 Django>=3.2.5
+PyYAML>=5.4.1
 
 # Web server
 gunicorn>=20.1.0

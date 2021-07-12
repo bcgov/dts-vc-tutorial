@@ -6,9 +6,15 @@
         <link type="text/css" rel="stylesheet" href="{% static 'ui/css/app.css' %}"></link>
     </head>
     <body>
-        Route name: {{ route }}
+        <!-- Load context object using Django template -->
+        <script type="text/javascript">
+            var context = JSON.parse('{{ context | safe }}');
+        </script>
+
+        <!-- Placeholder for Vue app -->
         <div id="app"></div>
 
+        <!-- Load Vue app source bundles -->
         <script type="text/javascript" src="{% static 'ui/js/chunk-vendors.js' %}"></script>
         <script type="text/javascript" src="{% static 'ui/js/app.js' %}"></script>
     </body>
