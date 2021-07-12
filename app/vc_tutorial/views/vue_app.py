@@ -17,7 +17,7 @@ def index(request, path):
     if os.path.isdir(config_path):
         for dirpath, dirnames, files in os.walk(config_path):           
             if not files or not files.__contains__("config.yaml"):
-                raise Http404(f"No tutorial found for /{path}")
+                raise Http404(f"No configured tutorial found for /{path}")
             
             config_file_path = os.path.join(config_path, "config.yaml") 
             with open(config_file_path, 'r') as stream:
