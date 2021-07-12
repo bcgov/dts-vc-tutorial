@@ -1,0 +1,5 @@
+Django>=3.2.5
+
+# Web server
+gunicorn>=20.1.0
+whitenoise>=5.2.0

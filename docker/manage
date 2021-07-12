@@ -1,0 +1,345 @@
+#!/bin/bash
+export MSYS_NO_PATHCONV=1
+export DOCKERHOST=${APPLICATION_URL-$(docker run --rm --net=host eclipse/che-ip)}
+set -e
+
+function echoError (){
+  _msg=${1}
+  _red='\e[31m'
+  _nc='\e[0m' # No Color
+  echo -e "${_red}${_msg}${_nc}"
+}
+
+function echoWarning (){
+  _msg=${1}
+  _yellow='\e[33m'
+  _nc='\e[0m' # No Color
+  echo -e "${_yellow}${_msg}${_nc}"
+}
+
+function echoRed (){
+  _msg=${1}
+  _red='\e[31m'
+  _nc='\e[0m' # No Color
+  echo -e "${_red}${_msg}${_nc}"
+}
+
+function echoYellow (){
+  _msg=${1}
+  _yellow='\e[33m'
+  _nc='\e[0m' # No Color
+  echo -e "${_yellow}${_msg}${_nc}"
+}
+
+function isInstalled () {
+  rtnVal=$(type "$1" >/dev/null 2>&1)
+  rtnCd=$?
+  if [ ${rtnCd} -ne 0 ]; then
+    return 1
+  else
+    return 0
+  fi
+}
+
+function isS2iInstalled () {
+  S2I_EXE=s2i
+  if ! isInstalled ${S2I_EXE}; then
+    echoError "The ${S2I_EXE} executable is needed and not on your path."
+    echoError "It can be downloaded from here: https://github.com/openshift/source-to-image/releases"
+    echoError "Make sure you extract the binary and place it in a directory on your path."
+    exit 1
+  fi
+}
+
+# =================================================================================================================
+# Usage:
+# -----------------------------------------------------------------------------------------------------------------
+usage() {
+  cat <<-EOF
+    
+      Usage: $0 [command] [options]
+    
+      Commands:
+    
+      build - Build the docker images for the project.
+              You need to do this first, since the builds require
+              a combination of Docker and S2I builds.
+    
+              You can build individual components as shown below, components that have dependencies
+              will have these dependencies built too.
+    
+              Examples:
+               - Build the api only.
+    
+                $0 build site
+    
+              By default all containers that components comprise of, will be rebuilt.
+    
+                $0 build 
+    
+      up -  Creates the application containers from the built images
+            and starts the services based on the docker-compose.yml file.
+
+            Containers will be started in development mode, using hot-reload.
+
+            Examples:
+            $0 start
+
+      start - Same as up
+
+      start-prod - Starts the containers in production mode: this will disable resource hot-reloading.
+
+      makemigrations - Runs the makemigrations command for the django app (the database container needs to be running).
+
+                      Examples:
+                      - Create the initial migrations for a new module
+
+                        $0 makemigrations <module-name>
+                      
+                      - Update migrations for all the modules in the project
+
+                        $0 makemigrations
+
+      migrate - Applies pending migrations to the database (the database container needs to be running).
+
+      logs - Display the logs from the docker compose run (ctrl-c to exit).
+
+      stop - Stops the services.  This is a non-destructive process.  The volumes and containers
+             are not deleted so they will be reused the next time you run start.
+    
+      down - Brings down the services and removes the volumes (storage) and containers.
+      
+      rm - Same as down
+EOF
+  exit 1
+}
+# -----------------------------------------------------------------------------------------------------------------
+# Default Settings:
+# -----------------------------------------------------------------------------------------------------------------
+DEFAULT_CONTAINERS="site"
+DEV_CONTAINERS="ui-dev"
+# -----------------------------------------------------------------------------------------------------------------
+# Functions:
+# -----------------------------------------------------------------------------------------------------------------
+
+build-site() {
+  BASE_IMAGE="registry.fedoraproject.org/f32/python3"
+  echo -e "\nBuilding site image from ${BASE_IMAGE}..."
+  ${S2I_EXE} build \
+    -e "UPGRADE_PIP_TO_LATEST=true" \
+    -e "PIP_NO_CACHE_DIR=" \
+    -v "${COMPOSE_PROJECT_NAME}_dcbr-pip-cache:/opt/app-root/.cache/pip" \
+    '../app' \
+    "$BASE_IMAGE" \
+    'vc-tutorial-site'
+
+  # this is only required in Windows
+  if [[ "$OSTYPE" == "msys" ]]; then
+    echo -e "\nFixing file permissions in vc-tutorial-site image"
+    docker build -q \
+      --build-arg BASE_IMAGE='vc-tutorial-site:latest' \
+      -t 'vc-tutorial-site' \
+      -f 'utils/fix-permissions/Dockerfile' 'utils/'
+  fi
+
+  # add ui bundles
+  echo -e "\nBuilding UI and adding bundles to vc-tutorial-site image"
+  docker build \
+    -t 'vc-tutorial-site' \
+    -f 'ui/Dockerfile' '..'
+}
+
+build-all() {
+  build-site
+}
+
+configureEnvironment() {
+
+  if [ -f .env ]; then
+    while read line; do
+      if [[ ! "$line" =~ ^\# ]] && [[ "$line" =~ .*= ]]; then
+        export ${line//[$'\r\n']}
+      fi
+    done <.env
+  fi
+
+  for arg in "$@"; do
+    # Remove recognized arguments from the list after processing.
+    shift
+
+    # echo "arg: ${arg}"
+    # echo "Remaining: ${@}"
+
+    case "$arg" in
+      *=*)
+        # echo "Exporting ..."
+        export "${arg}"
+        ;;
+      *)
+        # echo "Saving for later ..."
+        # If not recognized, save it for later processing ...
+        set -- "$@" "$arg"
+        ;;
+    esac
+  done
+
+  export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-dts-vc-tutorial}"
+
+  export STI_SCRIPTS_PATH=${STI_SCRIPTS_PATH:-/usr/libexec/s2i}
+  
+  export DEBUG=${DEBUG:-True}
+
+  # site
+  export APP_SCRIPT="run-prod.sh"
+  export DJANGO_SECRET_KEY="django-insecure-)f\$9!#f-o6k^gq(yrx9yf^-j=yny\$f#^*#p0=(!qvj@nyz@k5+"
+}
+
+getInputParams() {
+  ARGS=""
+
+  for arg in $@; do
+    case "$arg" in
+    *=*)
+      # Skip it
+      ;;
+    *)
+      ARGS+=" $arg"
+      ;;
+    esac
+  done
+
+  echo ${ARGS}
+}
+
+getStartupParams() {
+  CONTAINERS=""
+  ARGS=""
+
+  for arg in $@; do
+    case "$arg" in
+    *=*)
+      # Skip it
+      ;;
+    -*)
+      ARGS+=" $arg"
+      ;;
+    *)
+      CONTAINERS+=" $arg"
+      ;;
+    esac
+  done
+
+  if [ -z "$CONTAINERS" ]; then
+    CONTAINERS="$DEFAULT_CONTAINERS"
+  fi
+
+  echo ${ARGS} ${CONTAINERS}
+}
+
+deleteVolumes() {
+  _projectName=${COMPOSE_PROJECT_NAME:-docker}
+
+  echo "Stopping and removing any running containers ..."
+  docker-compose down -v
+
+  _pattern="^${_projectName}_\|^docker_"
+  _volumes=$(docker volume ls -q | grep ${_pattern})
+
+  if [ ! -z "${_volumes}" ]; then
+    echo "Removing project volumes ..."
+    echo ${_volumes} | xargs docker volume rm
+  else
+    echo "No project volumes exist."
+  fi
+
+  echo "Removing build cache ..."
+  rm -Rf ../client/tob-web/.cache
+}
+
+toLower() {
+  echo $(echo ${@} | tr '[:upper:]' '[:lower:]')
+}
+
+echoError (){
+  _msg=${1}
+  _red='\033[0;31m'
+  _nc='\033[0m' # No Color
+  echo -e "${_red}${_msg}${_nc}" >&2
+}
+
+functionExists() {
+  (
+    if [ ! -z ${1} ] && type ${1} &>/dev/null; then
+      return 0
+    else
+      return 1
+    fi
+  )
+}
+# =================================================================================================================
+
+SCRIPT_HOME="$(cd "$(dirname "$0")" && pwd)"
+pushd ${SCRIPT_HOME} >/dev/null
+COMMAND=$(toLower ${1})
+shift || COMMAND=usage
+
+case "${COMMAND}" in
+  start|up)
+    _startupParams=$(getStartupParams --force-recreate $@)
+    configureEnvironment "$@"
+    docker-compose up -d ${_startupParams} ${DEFAULT_CONTAINERS} ${DEV_CONTAINERS}
+    docker-compose logs -f
+    ;;
+  start-prod)
+    DEBUG=False
+    _startupParams=$(getStartupParams --force-recreate $@)
+    configureEnvironment "$@"
+    docker-compose up -d ${_startupParams} ${DEFAULT_CONTAINERS}
+    docker-compose logs -f
+    ;;
+  restart)
+    _startupParams=$(getStartupParams $@)
+    configureEnvironment "$@"
+    docker-compose stop ${_startupParams}
+    docker-compose up -d ${_startupParams}
+    docker-compose logs -f
+    ;;
+  logs)
+    configureEnvironment "$@"
+    docker-compose logs -f
+    ;;
+  stop)
+    configureEnvironment
+    docker-compose stop 
+    ;;
+  rm|down)
+    configureEnvironment
+    deleteVolumes
+    ;;
+  build)
+    isS2iInstalled
+
+    configureEnvironment "$@"
+
+    buildImage=$(toLower ${1})
+    shift || buildImage=all
+    # buildImage=$(echo ${buildImage} | sed s~^tob-~~)
+    case "$buildImage" in
+      *=*)
+        buildImage=all
+        ;;
+    esac
+
+    if functionExists "build-${buildImage}"; then
+      eval "build-${buildImage}"
+    else
+      echoError "\nThe build function, build-${buildImage}, does not exist.  Please check your build parameters and try again.\nUse '-h' to get full help details."
+      exit 1
+    fi
+    ;;
+  *)
+    usage
+    ;;
+esac
+
+popd >/dev/null

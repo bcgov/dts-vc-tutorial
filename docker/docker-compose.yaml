@@ -1,0 +1,45 @@
+version: "3"
+services:
+  site:
+    restart: always
+    image: vc-tutorial-site
+    environment:
+      DJANGO_DEBUG: ${DEBUG}
+      APP_SCRIPT: ${APP_SCRIPT}
+      STI_SCRIPTS_PATH: ${STI_SCRIPTS_PATH}
+    volumes:
+      - ../app:/opt/app-root/src
+      - ui-artifacts:/var/dev/static/ui
+    ports:
+      - 8000:8080
+    networks:
+      - dts-vc-tutorial
+    command: >
+      /bin/bash -c "
+      if [ $DEBUG ] && [ "$DEBUG" == "True" ]; then
+      echo Running in debug mode;
+        python manage.py migrate;
+        python manage.py runserver 0.0.0.0:8080;
+      else
+        echo Running s2i container...;
+        env;
+        ${STI_SCRIPTS_PATH}/run;
+      fi"
+  
+  ui-dev:
+    image: node:fermium
+    working_dir: /app
+    volumes:
+      - ../ui:/app
+      - ui-artifacts:/app/dist
+    ports:
+      - 8081:8080
+    networks:
+      - dts-vc-tutorial
+    command: npm run serve
+
+networks:
+  dts-vc-tutorial: 
+
+volumes:
+  ui-artifacts:
