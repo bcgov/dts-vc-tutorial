@@ -5,6 +5,13 @@
     <head>
     </head>
     <body>
-        <h1>List of apps and stuff goes here</h1>
+        <h1>List of available tutorials:</h1>
+        <ul>
+        {% for tutorial in tutorial_list %}
+            <li>
+                <a href="/{{tutorial}}">{{tutorial}}</a>
+            </li>
+        {% endfor %}
+        </ul>
     </body>
 </html>
