@@ -3,6 +3,8 @@ export MSYS_NO_PATHCONV=1
 export DOCKERHOST=${APPLICATION_URL-$(docker run --rm --net=host eclipse/che-ip)}
 set -e
 
+SCRIPT_HOME="$( cd "$( dirname "$0" )" && pwd )"
+
 function echoError (){
   _msg=${1}
   _red='\e[31m'
@@ -116,7 +118,7 @@ EOF
 # -----------------------------------------------------------------------------------------------------------------
 # Default Settings:
 # -----------------------------------------------------------------------------------------------------------------
-DEFAULT_CONTAINERS="site"
+DEFAULT_CONTAINERS="site agent"
 DEV_CONTAINERS="ui-dev"
 # -----------------------------------------------------------------------------------------------------------------
 # Functions:
@@ -183,15 +185,33 @@ configureEnvironment() {
     esac
   done
 
+  # global
   export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-dts-vc-tutorial}"
-
   export STI_SCRIPTS_PATH=${STI_SCRIPTS_PATH:-/usr/libexec/s2i}
-  
   export DEBUG=${DEBUG:-True}
+  export LEDGER_URL=${LEDGER_URL-http://$DOCKERHOST:9000}
 
   # site
   export APP_SCRIPT="run-prod.sh"
   export DJANGO_SECRET_KEY="django-insecure-)f\$9!#f-o6k^gq(yrx9yf^-j=yny\$f#^*#p0=(!qvj@nyz@k5+"
+  export CONTROLLER_PORT=8080
+
+  # agent
+  export AGENT_NAME="BCGov DTS Tutorials"
+  export AGENT_ADMIN_PORT="8024"
+  export AGENT_HTTP_IN_PORT="8021"
+  export AGENT_WS_IN_PORT="8023"
+  export AGENT_ENDPOINT=${AGENT_ENDPOINT:-http://$DOCKERHOST:$AGENT_HTTP_IN_PORT}
+  export AGENT_WALLET_NAME="dts_tutorials"
+  export AGENT_WALLET_ENCRYPTION_KEY="key"
+  export AGENT_WALLET_SEED=${AGENT_WALLET_SEED:-"dts-tutorials_000000000000000000"}
+  export AGENT_ADMIN_API_KEY=${AGENT_ADMIN_API_KEY:-"agency-api-key"}
+  export AGENT_ADMIN_MODE="admin-insecure-mode"
+  if [ ! -z "${AGENT_ADMIN_API_KEY}" ]; then
+    AGENT_ADMIN_MODE="admin-api-key ${AGENT_ADMIN_API_KEY}"
+  fi
+  export AGENT_LOG_LEVEL=${AGENT_LOG_LEVEL:-"error"}
+  export AGENT_WEBHOOK_URL=${AGENT_WEBHOOK_URL:-http://$DOCKERHOST:$CONTROLLER_PORT/webhooks}
 }
 
 getInputParams() {
