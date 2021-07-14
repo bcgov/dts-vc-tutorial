@@ -45,7 +45,7 @@ export const links: EnhancedNavLink[] = [
   },
   {
     path: "/why",
-    label: "Why are they important?",
+    label: "Why are Verifiable Credentials important?",
     enhancedLabel: "Learn about their importance",
     title: "Why Are Verifiable Credentials Important?",
     description:
@@ -53,7 +53,7 @@ export const links: EnhancedNavLink[] = [
   },
   {
     path: "/how",
-    label: "How to get them",
+    label: "How to get a Verifiable Credential",
     enhancedLabel: "Get your first Verifiable Credentials",
     title: "How Do I Get Verifiable Credentials?",
     description:

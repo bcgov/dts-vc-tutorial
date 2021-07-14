@@ -1,5 +1,5 @@
 <template>
-  <v-footer padless>
+  <v-footer color="grey" padless>
     <v-col class="text-center" cols="12">
       <p>Privacy policy</p>
       <p>Copyright {{ new Date().getFullYear() }}</p>
