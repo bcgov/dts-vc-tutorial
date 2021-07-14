@@ -1,0 +1,7 @@
+# This file contains settings that are common to every demo/tutorial app
+# Each entry can be overridden by specifying one with the same name in the
+# app-specific config.yaml configuration file.
+
+section_1:
+  title: "Global Title"
+  paragraph_1: "This is a global title."
