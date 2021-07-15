@@ -18,9 +18,8 @@
           <v-card-text class="card-content">{{ link.description }}</v-card-text>
           <v-card-actions>
             <v-btn
-              :small="$vuetify.breakpoint.smAndDown"
               block
-              class="text-capitalize"
+              class="card-button text-capitalize text-center"
               :to="link.path"
               >{{ link.enhancedLabel }}</v-btn
             >
@@ -50,6 +49,9 @@ export default class Home extends Vue {
 </script>
 
 <style lang="scss" scoped>
+.card-button {
+  max-width: 100%;
+}
 .card-title {
   word-break: break-word;
 }

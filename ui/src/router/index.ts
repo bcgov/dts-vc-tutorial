@@ -1,6 +1,10 @@
 import Vue from "vue";
 import VueRouter, { RouteConfig } from "vue-router";
 import Home from "../views/Home.vue";
+import ContentHow from "../components/content/How.vue";
+import ContentWhat from "../components/content/What.vue";
+import ContentWhy from "../components/content/Why.vue";
+import ContentGet from "../components/content/Get.vue";
 import DemoHome from "../components/demo/Home.vue";
 import DemoOverview from "../components/demo/Overview.vue";
 import DemoPreCheck from "../components/demo/PreCheck.vue";
@@ -16,10 +20,20 @@ const routes: Array<RouteConfig> = [
     component: Home,
   },
   {
-    path: "/about",
-    name: "About",
-    component: () =>
-      import(/* webpackChunkName: "about" */ "../views/About.vue"),
+    path: "/why",
+    component: ContentWhy,
+  },
+  {
+    path: "/what",
+    component: ContentWhat,
+  },
+  {
+    path: "/how",
+    component: ContentHow,
+  },
+  {
+    path: "/get",
+    component: ContentGet,
   },
   {
     path: "/demo",

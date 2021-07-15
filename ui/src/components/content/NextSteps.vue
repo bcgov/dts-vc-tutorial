@@ -20,7 +20,7 @@ interface Data {
 }
 
 @Component
-export default class DemoNextSteps extends Vue {
+export default class ContentNextSteps extends Vue {
   data(): Data {
     return {
       links,

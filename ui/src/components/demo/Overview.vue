@@ -21,7 +21,7 @@
     </v-row>
     <v-row>
       <v-col>
-        <DemoNextSteps />
+        <ContentNextSteps />
       </v-col>
     </v-row>
   </div>
@@ -30,12 +30,12 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import IconCard from "../shared/IconCard.vue";
-import DemoNextSteps from "./NextSteps.vue";
+import ContentNextSteps from "../content/NextSteps.vue";
 
 @Component({
   components: {
     IconCard,
-    DemoNextSteps,
+    ContentNextSteps,
   },
 })
 export default class DemoOverview extends Vue {}

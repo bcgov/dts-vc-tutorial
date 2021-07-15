@@ -52,7 +52,7 @@ export const links: EnhancedNavLink[] = [
       "You need to be confident in the security, integrity and confidentiality of your personal information.",
   },
   {
-    path: "/how",
+    path: "/get",
     label: "How to get a Verifiable Credential",
     enhancedLabel: "Get your first Verifiable Credentials",
     title: "How Do I Get Verifiable Credentials?",
