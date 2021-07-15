@@ -10,6 +10,10 @@ import DemoOverview from "../components/demo/Overview.vue";
 import DemoPreCheck from "../components/demo/PreCheck.vue";
 import DemoPreCheckYes from "../components/demo/PreCheckYes.vue";
 import DemoPreCheckNo from "../components/demo/PreCheckNo.vue";
+import DemoStep1 from "../components/demo/Step1.vue";
+import DemoStep2 from "../components/demo/Step2.vue";
+import DemoStep3 from "../components/demo/Step3.vue";
+import DemoStep4 from "../components/demo/Step4.vue";
 
 Vue.use(VueRouter);
 
@@ -49,10 +53,10 @@ const routes: Array<RouteConfig> = [
           { path: "no", component: DemoPreCheckNo },
         ],
       },
-      { path: "step/1", component: undefined },
-      { path: "step/2", component: undefined },
-      { path: "step/3", component: undefined },
-      { path: "step/4", component: undefined },
+      { path: "step/1", component: DemoStep1 },
+      { path: "step/2", component: DemoStep2 },
+      { path: "step/3", component: DemoStep3 },
+      { path: "step/4", component: DemoStep4 },
     ],
   },
 ];

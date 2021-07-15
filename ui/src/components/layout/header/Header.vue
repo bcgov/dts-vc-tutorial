@@ -18,20 +18,20 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 
-interface NavLink {
+export interface NavLink {
   path: string;
   label: string;
-}
-
-interface Data {
-  drawer: boolean;
-  links: NavLink[];
 }
 
 export interface EnhancedNavLink extends NavLink {
   title: string;
   description: string;
   enhancedLabel: string;
+}
+
+interface Data {
+  drawer: boolean;
+  links: NavLink[];
 }
 
 export const links: EnhancedNavLink[] = [

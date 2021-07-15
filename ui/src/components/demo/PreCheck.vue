@@ -11,8 +11,8 @@
     </v-row>
     <v-row>
       <v-col>
-        <v-btn class="mr-4" to="/demo/step/pre/yes">Yes</v-btn>
-        <v-btn class="mr-4" to="/demo/step/pre/no">No</v-btn>
+        <v-btn class="mr-4 text-capitalize" to="/demo/step/pre/yes">Yes</v-btn>
+        <v-btn class="mr-4 text-capitalize" to="/demo/step/pre/no">No</v-btn>
       </v-col>
     </v-row>
     <router-view></router-view>

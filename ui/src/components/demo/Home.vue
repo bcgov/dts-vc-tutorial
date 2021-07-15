@@ -13,7 +13,7 @@
       <v-col cols="12" md="6">
         <IconCard icon="mdi-message-alert">
           <p>
-            You’ll need a {{ "TODO " }} Verifiable Credential on your smartphone
+            You’ll need a {{ "TODO" }} Verifiable Credential on your smartphone
             for this demo.
           </p>
           <p>
