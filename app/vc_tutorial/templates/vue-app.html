@@ -2,20 +2,35 @@
 
 <!DOCTYPE html>
 <html>
-    <head>        
-        <link type="text/css" rel="stylesheet" href="{% static 'ui/css/chunk-vendors.css' %}"></link>
-    </head>
-    <body>
-        <!-- Load context object using Django template -->
-        <script type="text/javascript">
-            var context = JSON.parse('{{ context | safe }}');
-        </script>
 
-        <!-- Placeholder for Vue app -->
-        <div id="app"></div>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@latest/css/materialdesignicons.min.css">
+    <link type="text/css" rel="stylesheet" href="{% static 'ui/css/chunk-vendors.css' %}">
+    </link>
+</head>
 
-        <!-- Load Vue app source bundles -->
-        <script type="text/javascript" src="{% static 'ui/js/chunk-vendors.js' %}"></script>
-        <script type="text/javascript" src="{% static 'ui/js/app.js' %}"></script>
-    </body>
+<body>
+    <!-- Load context object using Django template -->
+    <script type="text/javascript">
+        var context = JSON.parse('{{ context | safe }}');
+    </script>
+
+    <script type="text/javascript">
+        var iOS = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
+        var Android = !!navigator.platform && /Android|Linux|Linux armv6l|Linux armv7l/.test(navigator.platform);
+        var mobileContext = iOS || Android;
+    </script>
+
+    <!-- Placeholder for Vue app -->
+    <div id="app"></div>
+
+    <!-- Load Vue app source bundles -->
+    <script type="text/javascript" src="{% static 'ui/js/chunk-vendors.js' %}"></script>
+    <script type="text/javascript" src="{% static 'ui/js/app.js' %}"></script>
+</body>
+
 </html>
